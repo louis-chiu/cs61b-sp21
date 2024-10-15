@@ -6,6 +6,9 @@ public class HelloNumbers {
             System.out.print(total + " ");
             total = total + x;
             x = x + 1;
+            Math.pow(x, 2);
         }
-	}
+        String[] a = new String[] {"1", "@" };
+        double[] doubles = new double[a.length];
+    }
 } 
