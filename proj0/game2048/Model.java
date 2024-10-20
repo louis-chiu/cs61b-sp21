@@ -126,28 +126,32 @@ public class Model extends Observable {
         return changed;
     }
 
+    /**
+     * Handles the movement of the tiles in the direction of the side.
+     * @param indexOfDirection
+     * @param side
+     * @return true if the board is changed, false otherwise.
+     */
     private boolean handleMoveDirection(int indexOfDirection, Side side) {
         this.board.setViewingPerspective(side);
 
         boolean isChanged = false;
         for (int i = this.board.size() - 1; i >= 0; i--) {
             boolean isMerged = false;
+            Tile currentTile = this.board.tile(indexOfDirection, i);
             while (!isMerged) {
                 int nonNullIndex = findNextNonNullIndex(indexOfDirection, i - 1);
 
                 if (nonNullIndex == -1) break;
 
                 Tile tileToMove = this.board.tile(indexOfDirection, nonNullIndex);
-                if (this.board.tile(indexOfDirection, i) != null
-                    && this.board.tile(indexOfDirection, i).value() != tileToMove.value()){
+                if (currentTile != null && currentTile.value() != tileToMove.value()){
                     break;
                 };
 
                 isMerged = this.board.move(indexOfDirection, i, tileToMove);
-                if (isMerged) {
-                    int newScore = tileToMove.value() * 2;
-                    this.score += newScore;
-                }
+                currentTile = tileToMove.next();
+                if (isMerged) this.score += currentTile.value();
                 isChanged = true;
             }
         }
@@ -156,8 +160,12 @@ public class Model extends Observable {
         return isChanged;
     }
 
+    /** Returns the index of the next non-null tile in the direction of
+     *  the current tile.
+     */
     private int findNextNonNullIndex(int indexOfDirection, int indexOfValues) {
         if (indexOfValues == -1) return -1;
+
         Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
 
         if (currentTile != null) {
