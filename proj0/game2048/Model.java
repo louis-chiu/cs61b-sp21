@@ -138,6 +138,11 @@ public class Model extends Observable {
                 if (nonNullIndex == -1) break;
 
                 Tile tileToMove = this.board.tile(indexOfDirection, nonNullIndex);
+                if (this.board.tile(indexOfDirection, i) != null
+                    && this.board.tile(indexOfDirection, i).value() != tileToMove.value()){
+                    break;
+                };
+
                 isMerged = this.board.move(indexOfDirection, i, tileToMove);
                 if (isMerged) {
                     int newScore = tileToMove.value() * 2;
