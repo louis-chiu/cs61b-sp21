@@ -116,6 +116,10 @@ public class Model extends Observable {
         }
 
         checkGameOver();
+        if (gameOver) {
+            this.maxScore = Math.max(this.maxScore, this.score);
+        }
+
         if (changed) {
             setChanged();
         }
@@ -138,7 +142,6 @@ public class Model extends Observable {
                 if (isMerged) {
                     int newScore = tileToMove.value() * 2;
                     this.score += newScore;
-                    this.maxScore = Math.max(this.maxScore, newScore);
                 }
                 isChanged = true;
             }
@@ -153,7 +156,7 @@ public class Model extends Observable {
         Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
 
         if (currentTile != null) {
-            return indexOfValues;
+            return currentTile.row();
         }
 
         return findNextNonNullIndex(indexOfDirection, indexOfValues - 1);
