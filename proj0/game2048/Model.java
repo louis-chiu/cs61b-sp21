@@ -109,9 +109,6 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
         for (int indexOfDirection = 0; indexOfDirection < this.board.size(); indexOfDirection++) {
             if (handleMoveDirection(indexOfDirection, side)) {
                 changed = true;
@@ -136,13 +133,13 @@ public class Model extends Observable {
 
                 if (nonNullIndex == -1) break;
 
-                if (this.board.tile(indexOfDirection, i) != null) {
-                    this.score += (this.board.tile(indexOfDirection, i).value() * 2);
-                    isMerged = true;
-                }
-
                 Tile tileToMove = this.board.tile(indexOfDirection, nonNullIndex);
-                this.board.move(indexOfDirection, i, tileToMove);
+                isMerged = this.board.move(indexOfDirection, i, tileToMove);
+                if (isMerged) {
+                    int newScore = tileToMove.value() * 2;
+                    this.score += newScore;
+                    this.maxScore = Math.max(this.maxScore, newScore);
+                }
                 isChanged = true;
             }
         }
@@ -156,7 +153,7 @@ public class Model extends Observable {
         Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
 
         if (currentTile != null) {
-            return currentTile.row();
+            return indexOfValues;
         }
 
         return findNextNonNullIndex(indexOfDirection, indexOfValues - 1);
