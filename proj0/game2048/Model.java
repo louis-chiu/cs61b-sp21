@@ -1,11 +1,10 @@
 package game2048;
 
-import java.util.Formatter;
-import java.util.Observable;
+import java.util.*;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Louis Chiu
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -113,12 +112,64 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        for (int indexOfDirection = 0; indexOfDirection < this.board.size(); indexOfDirection++) {
+            if (handleMoveDirection(indexOfDirection, side)) {
+                changed = true;
+            }
+        }
 
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    private boolean handleMoveDirection(int indexOfDirection, Side side) {
+        this.board.setViewingPerspective(side);
+        boolean isChange = false;
+
+        int mergedOrMovedIndex = -1;
+        boolean isPrevMerge = false;
+        for (int indexOfValues = this.board.size() - 1; indexOfValues >= 0; indexOfValues--) {
+            Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
+
+            int indexToAction = findNonNullIndex(indexOfDirection, mergedOrMovedIndex == -1 ? (indexOfValues - 1) : mergedOrMovedIndex);
+
+            if (indexToAction == -1) break;
+
+            Tile tileToAction = this.board.tile(indexOfDirection, indexToAction);
+            this.board.move(indexOfDirection, indexOfValues, tileToAction);
+            mergedOrMovedIndex = indexToAction;
+            if (currentTile == null) {
+                // 若當前是 null 需判斷 tileToMoved 之後有沒有可以合併的
+                int _indexToAction = findNonNullIndex(indexOfDirection, indexToAction - 1);
+                if (_indexToAction != -1) {
+                    Tile _tileToAction = this.board.tile(indexOfDirection, _indexToAction);
+                    this.board.move(indexOfDirection, indexOfValues, _tileToAction);
+                    mergedOrMovedIndex = _indexToAction;
+                    this.score = _tileToAction.value() * 2;
+                }
+            } else {
+                this.score = tileToAction.value() * 2;
+            }
+
+            isChange = true;
+        }
+
+        this.board.setViewingPerspective(Side.NORTH);
+        return isChange;
+    }
+
+    private int findNonNullIndex(int indexOfDirection, int indexOfValues) {
+        if (indexOfValues == -1) return -1;
+        Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
+
+        if (currentTile != null) {
+            return currentTile.row();
+        }
+
+        return findNonNullIndex(indexOfDirection, indexOfValues - 1);
     }
 
     /** Checks if the game is over and sets the gameOver variable
@@ -137,7 +188,11 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        for (Tile tile : b) {
+            if (tile == null) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -147,7 +202,10 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        for (Tile tile : b) {
+            if (tile == null) continue;
+            if (tile.value() == MAX_PIECE) return true;
+        }
         return false;
     }
 
@@ -158,7 +216,28 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        int previousValue = 0;
+        int[] previousRow = new int[b.size()];
+
+        for (Tile tile : b) {
+            if (tile == null) return true;
+
+            int currentColumn = tile.col();
+            int currentValue = tile.value();
+            boolean isLastValueOfCurrentRow = currentColumn == b.size() - 1;
+
+            if (previousValue != 0 && previousValue == currentValue) {
+                return true;
+            }
+
+            if (previousRow[currentColumn] != 0 && previousRow[currentColumn] == currentValue) {
+                return true;
+            }
+
+            previousValue =  isLastValueOfCurrentRow ? 0 : currentValue;
+            previousRow[currentColumn] = currentValue;
+        }
+
         return false;
     }
 
