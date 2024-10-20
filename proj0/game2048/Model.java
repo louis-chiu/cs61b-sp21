@@ -156,7 +156,7 @@ public class Model extends Observable {
         Tile currentTile = this.board.tile(indexOfDirection, indexOfValues);
 
         if (currentTile != null) {
-            return currentTile.row();
+            return indexOfValues;
         }
 
         return findNextNonNullIndex(indexOfDirection, indexOfValues - 1);
